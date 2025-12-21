@@ -1,4 +1,6 @@
-#[derive(Debug, Clone, PartialOrd, PartialEq)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, PartialOrd, PartialEq, Serialize, Deserialize)]
 pub struct VariantDatabase {
     pub filename: String,
     pub chrom: String,
@@ -10,22 +12,8 @@ pub struct VariantDatabase {
     pub filter: String,
 }
 
-#[derive(Debug, Clone, PartialOrd, PartialEq, Serialize)]
-pub struct ReturnVarID {
-    pub id: String,
-}
-
-#[derive(Debug, Clone, PartialOrd, PartialEq, Serialize)]
-pub struct ReturnVarPos {
-    pub pos: String,
-}
-
-#[derive(Debug, Clone, PartialOrd, PartialEq, Serialize)]
-pub struct ReturnVarRef {
-    pub refallele: String,
-}
-
-#[derive(Debug, Clone, PartialOrd, PartialEq, Serialize)]
-pub struct ReturnVarAlt {
-    pub altallele: String,
+#[derive(Debug, Serialize)]
+pub struct ListTemplate {
+    pub searchid: String,
+    pub returnvec: Vec<VariantDatabase>,
 }

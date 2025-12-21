@@ -2,6 +2,7 @@ mod args;
 mod axumserver;
 mod popdata;
 mod variant;
+mod webversion;
 use crate::args::CommandParse;
 use crate::args::Commands;
 use crate::axumserver::variant_alt;
@@ -9,12 +10,11 @@ use crate::axumserver::variant_id;
 use crate::axumserver::variant_pos;
 use crate::axumserver::variant_ref;
 use crate::popdata::variantdatabase;
-use crate::variant::ReturnVarAlt;
-use crate::variant::ReturnVarID;
-use crate::variant::ReturnVarPos;
-use crate::variant::ReturnVarRef;
-use axum::{Router, routing::post};
+use crate::webversion::variant_id_web;
+use axum::Router;
+use axum::routing::get;
 use clap::Parser;
+use handlebars::Handlebars;
 
 /*
 Gaurav Sablok
@@ -38,14 +38,29 @@ async fn main() {
                 println!("The command has been finished:{:?}", command);
             });
         }
-        Commands::VariantServer { variantserver } => {
+        Commands::VariantServerPostman { variantserver } => {
             if variantserver == "run" {
                 let app = Router::new()
-                    .route("/idsearch", post(variant_id(ReturnVarID)))
-                    .route("/possearch", post(variant_pos(ReturnVarPos)))
-                    .route("/refsearch", post(variant_ref(ReturnVarRef)))
-                    .route("/altsearch", post(variant_alt(ReturnVarAlt)));
+                    .route("/idsearch/{id}", get(variant_id))
+                    .route("/possearch/{pos}", get(variant_pos))
+                    .route("/refsearch/{ref}", get(variant_ref))
+                    .route("/altsearch/{alt}", get(variant_alt));
                 let listener = tokio::net::TcpListener::bind("127.0.0.1:1000")
+                    .await
+                    .unwrap();
+                axum::serve(listener, app).await.unwrap();
+            }
+        }
+        Commands::Webversion { variantserver } => {
+            if variantserver == "run" {
+                let mut hbs = Handlebars::new();
+                hbs.register_template_string("iddisplay", "/templates/iddisplay.hbs")
+                    .expect("file not found");
+                let app = Router::new()
+                    .nest_service("/introduction", ServeFile::new("/templates/index.hbs"))
+                    .route("/idsearch/{id}", get(variant_id_web))
+                    .with_state(Engine::from(hbs));
+                let listener = tokio::net::TcpListener::bind("127.0.0.1:4000")
                     .await
                     .unwrap();
                 axum::serve(listener, app).await.unwrap();

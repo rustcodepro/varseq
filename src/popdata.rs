@@ -66,7 +66,10 @@ pub async fn variantdatabase(
         .bind(i.refallele.clone())
         .bind(i.altallele.clone())
         .bind(i.quality.to_string().clone())
-        .bind(i.filter.clone());
+        .bind(i.filter.clone())
+        .execute(&databaseopen)
+        .await
+        .unwrap();
     }
 
     Ok(variantstorage)

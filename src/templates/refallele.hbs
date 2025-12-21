@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+  <head><title> Welcome to the Varseq axum Server</title></head>
+  <body>
+       <h1> The variants associated with the specified refallele are {{ searchid }} </h1>
+       <ul>
+       {{ #each returnvec }}
+         <li> <strong> {{ filename  }} </strong> : {{ chrom }} : {{ pos }} : {{ id }} : {{ refallele }} : {{ altallele }} : {{ quality }} : {{ filter }} </li>
+       {{ /each  }}
+       </ul>
+  </body>
+</html>

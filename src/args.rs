@@ -27,7 +27,12 @@ pub enum Commands {
         threads: String,
     },
     /// Axum server
-    VariantServer {
+    VariantServerPostman {
+        /// variant server start
+        variantserver: String,
+    },
+    /// Axum server web
+    Webversion {
         /// variant server start
         variantserver: String,
     },
