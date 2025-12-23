@@ -21,8 +21,6 @@ pub enum Commands {
     PopulateVariant {
         /// variant folder file
         variantfolder: String,
-        /// path to the postgres database
-        databaseadd: String,
         /// number of the threads
         threads: String,
     },

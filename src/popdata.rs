@@ -1,5 +1,6 @@
 use crate::variant::VariantDatabase;
-use sqlx::PgPool;
+use sqlx::sqlite::SqliteConnectOptions;
+use sqlx::sqlite::SqlitePoolOptions;
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -10,10 +11,7 @@ codeprog@icloud.com
 */
 
 #[tokio::main]
-pub async fn variantdatabase(
-    pathvariant: &str,
-    database: &str,
-) -> Result<Vec<VariantDatabase>, Box<dyn Error>> {
+pub async fn variantdatabase(pathvariant: &str) -> Result<Vec<VariantDatabase>, Box<dyn Error>> {
     let mut variantstorage: Vec<VariantDatabase> = Vec::new();
     for i in std::fs::read_dir(pathvariant)? {
         let openfile = i?.path();
@@ -34,13 +32,19 @@ pub async fn variantdatabase(
                 id: linevec[2].to_string(),
                 refallele: linevec[3].to_string(),
                 altallele: linevec[4].to_string(),
-                quality: linevec[5].parse::<usize>().unwrap(),
+                quality: linevec[5].to_string(),
                 filter: linevec[6].to_string(),
             })
         }
     }
 
-    let databaseopen = PgPool::connect(database).await.unwrap();
+    let connection = SqliteConnectOptions::new()
+        .filename("variantsearch.db")
+        .create_if_missing(true);
+    let connect = SqlitePoolOptions::new()
+        .max_connections(10)
+        .connect_with(connection)
+        .await?;
     sqlx::query(
         r#" CREATE TABLE IF NOT EXISTS variants(
             filename integer primary key,
@@ -52,7 +56,7 @@ pub async fn variantdatabase(
             quality text not null,
             filter text not null"#,
     )
-    .execute(&databaseopen)
+    .execute(&connect)
     .await?;
     for i in variantstorage.iter() {
         sqlx::query(
@@ -67,7 +71,7 @@ pub async fn variantdatabase(
         .bind(i.altallele.clone())
         .bind(i.quality.to_string().clone())
         .bind(i.filter.clone())
-        .execute(&databaseopen)
+        .execute(&connect)
         .await
         .unwrap();
     }

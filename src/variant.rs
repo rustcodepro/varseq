@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialOrd, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialOrd, PartialEq, Serialize, Deserialize, sqlx::FromRow)]
 pub struct VariantDatabase {
     pub filename: String,
     pub chrom: String,
@@ -8,7 +8,7 @@ pub struct VariantDatabase {
     pub id: String,
     pub refallele: String,
     pub altallele: String,
-    pub quality: usize,
+    pub quality: String,
     pub filter: String,
 }
 
